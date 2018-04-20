@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+</head>
+<body>
+<canvas></canvas>
+<script src="tool.js"></script>
+<script src="sky.js"></script>
+<script src="land.js"></script>
+<script src="pipe.js"></script>
+<script src="bird.js"></script>
+<script>
+    var myCanvas = document.querySelector("canvas");
+    var ctx = myCanvas.getContext("2d");
+    var imgUrl = {
+        sky: "images/sky.png", land: "images/land.png", pipeDown: "images/pipeDown.png",
+        pipeUp: "images/pipeUp.png", bird: "images/bird.png"
+    };
+    var roles = [];
+    speed = 3;
+    space = 150;
+    var timer = null;
+    imgLoaded(imgUrl,function (imgObj) {
+        myCanvas.width = imgObj['sky'].width;
+        myCanvas.height = imgObj['sky'].height;
+        for (var i = 0; i < 2; i++) {
+            roles.push(getSky(ctx, imgObj['sky'], speed));
+        }
+
+        for(var i=0;i<6;i++){
+            roles.push(getPipe(ctx,imgObj['pipeUp'],imgObj['pipeDown'],imgObj['land'].height,space,speed))
+        }
+        for (var i = 0; i < 4; i++) {
+            roles.push(getLand(ctx, imgObj['land'], speed));
+        }
+         roles.push(bird = getBird(ctx,imgObj['bird'],3,1,50,0));
+
+        timer =setInterval(function () {
+            var birdX = bird.x + bird.width/2;
+            var birdY= bird.y + bird.height/2;
+//            鸟的坐标合理性，超过天空，潜入大地 ，游戏结束
+            if(birdY<0||birdY>myCanvas.height-imgObj.land.height||ctx.isPointInPath(birdX,birdY)){
+                clearInterval(timer);
+                ctx.fillStyle = "rgba(0,0,0,0.5)";
+                ctx.fillRect(0,0,myCanvas.width,myCanvas.height);
+                ctx.beginPath();
+                ctx.fillStyle="white";
+                ctx.textAlign="center";
+                ctx.textBaseline= "middle";
+                ctx.font = "50px 微软雅黑";
+                ctx.fillText("GAME OVER",myCanvas.width/2,myCanvas.height/2)
+            }else{
+                ctx.beginPath();
+                roles.forEach(function (role, i) {
+                    role.draw();
+                    role.update();
+                })
+            }
+
+        }, 30);
+    });
+</script>
+</body>
+</html>
